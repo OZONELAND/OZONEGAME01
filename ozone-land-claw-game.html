@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OZONE LAND — เกมส์คีบตุ๊กตาออนไลน์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&family=Sarabun:wght@400;500;600&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#120821;
+    --bg2:#1c1033;
+    --bg3:#26123f;
+    --pink:#ff2e88;
+    --cyan:#00e5ff;
+    --amber:#ffd400;
+    --green:#7cff6b;
+    --text:#f5f0ff;
+    --muted:#b3a2d9;
+    --glass:rgba(255,255,255,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(255,46,136,0.18), transparent 45%),
+      radial-gradient(circle at 85% 10%, rgba(0,229,255,0.16), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Sarabun',sans-serif;
+    min-height:100vh;
+    padding:20px 14px 60px;
+  }
+  h1,h2,h3,.display{font-family:'Prompt',sans-serif;}
+  .mono{font-family:'Chakra Petch',monospace;}
+  button{font-family:'Sarabun',sans-serif;cursor:pointer;}
+  button:focus-visible, input:focus-visible, select:focus-visible{
+    outline:2px solid var(--cyan); outline-offset:2px;
+  }
+  a{color:var(--cyan);}
+
+  /* ===== Marquee ===== */
+  .marquee-wrap{ text-align:center; margin-bottom:22px; position:relative;}
+  .marquee{
+    font-family:'Prompt',sans-serif;
+    font-weight:800;
+    font-size:clamp(28px,6vw,46px);
+    letter-spacing:2px;
+    display:inline-block;
+    padding:10px 34px;
+    border-radius:14px;
+    background:linear-gradient(180deg, var(--bg3), var(--bg2));
+    border:2px solid rgba(255,255,255,0.08);
+    color:#fff;
+    text-shadow:0 0 8px var(--pink), 0 0 22px rgba(255,46,136,0.6), 0 0 2px #fff;
+    box-shadow:0 0 30px rgba(255,46,136,0.25), inset 0 0 20px rgba(0,229,255,0.08);
+  }
+  .marquee span{color:var(--cyan); text-shadow:0 0 8px var(--cyan),0 0 22px rgba(0,229,255,0.6),0 0 2px #fff;}
+  .tagline{color:var(--muted); font-size:14px; margin-top:8px; letter-spacing:1px;}
+
+  .admin-gear{
+    position:fixed; right:16px; bottom:16px; width:42px; height:42px; border-radius:50%;
+    background:var(--bg3); border:1px solid rgba(255,255,255,0.15); color:var(--muted);
+    font-size:18px; display:flex; align-items:center; justify-content:center; z-index:50;
+    box-shadow:0 4px 14px rgba(0,0,0,0.4);
+  }
+  .admin-gear:hover{color:var(--cyan); border-color:var(--cyan);}
+
+  /* ===== Layout ===== */
+  .layout{
+    max-width:1080px; margin:0 auto; display:grid; grid-template-columns: 1.15fr 0.85fr; gap:22px;
+  }
+  @media (max-width:860px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{
+    background:linear-gradient(180deg, var(--bg2), var(--bg3));
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:18px;
+  }
+
+  /* ===== Cabinet ===== */
+  .cabinet{
+    position:relative;
+    border-radius:20px;
+    padding:16px 16px 20px;
+    background:linear-gradient(180deg,#2a1247,#180a2c);
+    border:2px solid rgba(255,255,255,0.08);
+    box-shadow:0 0 40px rgba(255,46,136,0.12), inset 0 0 30px rgba(0,0,0,0.4);
+  }
+  .cabinet-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .credit-readout{
+    font-family:'Chakra Petch',monospace; font-weight:700; font-size:14px;
+    background:#0a0512; border:1px solid rgba(0,229,255,0.4); color:var(--cyan);
+    padding:6px 12px; border-radius:8px; text-shadow:0 0 6px rgba(0,229,255,0.7);
+    letter-spacing:1px;
+  }
+  .player-chip{font-size:13px; color:var(--muted);}
+  .player-chip b{color:var(--text);}
+
+  .stage{
+    position:relative;
+    height:340px;
+    background:
+      linear-gradient(180deg, rgba(0,229,255,0.05), transparent 40%),
+      #0d0620;
+    border-radius:14px;
+    border:3px solid rgba(255,255,255,0.1);
+    overflow:hidden;
+  }
+  .stage::before{ /* glass sheen */
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(115deg, rgba(255,255,255,0.08) 0%, transparent 18%, transparent 82%, rgba(255,255,255,0.05) 100%);
+    pointer-events:none; z-index:5;
+  }
+  .rail{
+    position:absolute; top:14px; left:6%; right:6%; height:4px;
+    background:linear-gradient(90deg, var(--pink), var(--cyan));
+    border-radius:4px; box-shadow:0 0 8px rgba(255,255,255,0.3);
+  }
+  .claw-arm{
+    position:absolute; top:14px; width:2px; height:60px;
+    background:repeating-linear-gradient(180deg,#ccc 0 4px, #666 4px 8px);
+    left:20%;
+    transition:left 0.45s ease, height 0.5s ease;
+    z-index:6;
+  }
+  .claw-arm.descending{ height:210px; }
+  .claw-head{
+    position:absolute; bottom:-14px; left:50%; transform:translateX(-50%);
+    width:34px; height:20px;
+  }
+  .prong{
+    position:absolute; width:5px; height:22px; border-radius:3px;
+    background:linear-gradient(180deg,#e8e8e8,#8a8a8a);
+    top:-4px; transition:transform 0.3s ease;
+  }
+  .prong.left{ left:2px; transform:rotate(-38deg); transform-origin:top center;}
+  .prong.right{ right:2px; transform:rotate(38deg); transform-origin:top center;}
+  .claw-arm.closed .prong.left{ transform:rotate(-6deg); }
+  .claw-arm.closed .prong.right{ transform:rotate(6deg); }
+
+  .pit{
+    position:absolute; left:4%; right:26%; bottom:10px; top:56%;
+    display:flex; flex-wrap:wrap; align-content:flex-end; gap:2px; padding:4px;
+  }
+  .ball{
+    width:30px; height:30px; border-radius:50%; margin:-4px;
+    box-shadow:inset -4px -4px 8px rgba(0,0,0,0.35), inset 3px 3px 6px rgba(255,255,255,0.5);
+    transition:opacity 0.3s ease, transform 0.3s ease;
+  }
+  .chute{
+    position:absolute; right:4%; top:10%; bottom:0; width:18%;
+    border-left:2px dashed rgba(255,255,255,0.15);
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:8px;
+  }
+  .chute-label{ font-size:11px; color:var(--muted); text-align:center; line-height:1.3; }
+  .chute-mouth{
+    width:48px; height:14px; border-radius:0 0 10px 10px; background:#000;
+    box-shadow:inset 0 3px 6px rgba(0,0,0,0.6); margin-bottom:6px;
+    border:1px solid rgba(255,255,255,0.15); border-top:none;
+  }
+  .travel-ball{
+    position:absolute; width:26px; height:26px; border-radius:50%; z-index:7;
+    box-shadow:inset -3px -3px 6px rgba(0,0,0,0.35), inset 2px 2px 4px rgba(255,255,255,0.5), 0 0 8px rgba(255,255,255,0.25);
+    transition:left 0.5s ease, top 0.5s ease, opacity 0.3s ease;
+  }
+
+  .controls{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .ctrl-btn{
+    background:var(--bg3); border:1px solid rgba(255,255,255,0.15); color:var(--text);
+    border-radius:12px; padding:12px 16px; font-size:18px; min-width:52px;
+    transition:transform 0.1s ease, border-color 0.15s ease;
+  }
+  .ctrl-btn:hover:not(:disabled){ border-color:var(--cyan); }
+  .ctrl-btn:active:not(:disabled){ transform:scale(0.94); }
+  .ctrl-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .drop-btn{
+    background:linear-gradient(180deg, var(--pink), #c21568);
+    border:none; color:#fff; font-family:'Prompt',sans-serif; font-weight:700;
+    padding:14px 26px; border-radius:14px; font-size:16px; letter-spacing:0.5px;
+    box-shadow:0 6px 0 #8a0f4a, 0 8px 18px rgba(255,46,136,0.35);
+  }
+  .drop-btn:active:not(:disabled){ transform:translateY(4px); box-shadow:0 2px 0 #8a0f4a; }
+  .drop-btn:disabled{ opacity:0.4; box-shadow:none; cursor:not-allowed; }
+  .status-line{ text-align:center; margin-top:10px; font-size:13px; color:var(--muted); min-height:18px;}
+
+  .new-entry-link{ display:block; text-align:center; margin-top:10px; font-size:13px; }
+
+  /* ===== History sidebar ===== */
+  .hist-title{ display:flex; align-items:center; gap:8px; margin:0 0 12px; font-size:18px;}
+  .hist-title .dot{width:8px;height:8px;border-radius:50%;background:var(--green); box-shadow:0 0 6px var(--green);}
+  .hist-list{ list-style:none; margin:0; padding:0; max-height:420px; overflow-y:auto; }
+  .hist-list li{
+    display:flex; justify-content:space-between; gap:8px; padding:10px 4px;
+    border-bottom:1px dashed rgba(255,255,255,0.08); font-size:14px;
+  }
+  .hist-list .nm{color:var(--text); font-weight:600;}
+  .hist-list .pz{color:var(--amber); text-align:right; font-size:12.5px;}
+  .hist-empty{color:var(--muted); font-size:13px; padding:10px 4px;}
+
+  /* ===== Overlays / Modals ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(5,2,12,0.82); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;
+  }
+  .hidden{display:none !important;}
+  .modal{
+    background:linear-gradient(180deg,var(--bg2),var(--bg3));
+    border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:26px;
+    width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal h2{ margin:0 0 4px; font-size:22px;}
+  .modal .sub{ color:var(--muted); font-size:13px; margin-bottom:18px;}
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px;}
+  .field input{
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15);
+    background:#0d0620; color:var(--text); font-size:15px;
+  }
+  .toggle-row{ display:flex; gap:8px; margin-bottom:16px; }
+  .toggle-btn{
+    flex:1; padding:9px; border-radius:10px; border:1px solid rgba(255,255,255,0.15);
+    background:transparent; color:var(--muted); font-size:13px;
+  }
+  .toggle-btn.active{ background:rgba(0,229,255,0.12); border-color:var(--cyan); color:var(--cyan); }
+  .primary-btn{
+    width:100%; padding:13px; border-radius:12px; border:none; margin-top:6px;
+    background:linear-gradient(180deg,var(--cyan),#00a9c0); color:#04202a; font-weight:700;
+    font-family:'Prompt',sans-serif; font-size:15px;
+  }
+  .primary-btn:disabled{opacity:0.5;}
+  .err-text{ color:#ff6b8f; font-size:12.5px; min-height:16px; margin-top:6px;}
+  .close-x{ position:absolute; top:14px; right:16px; background:none; border:none; color:var(--muted); font-size:20px;}
+  .modal{position:relative;}
+
+  /* result modal */
+  .result-prize{
+    text-align:center; padding:18px 10px; margin:10px 0 16px;
+    background:radial-gradient(circle at center, rgba(255,212,0,0.15), transparent 70%);
+    border:1px solid rgba(255,212,0,0.3); border-radius:14px;
+  }
+  .result-prize .icon{font-size:40px;}
+  .result-prize .name{font-family:'Prompt',sans-serif; font-weight:700; font-size:20px; color:var(--amber); margin-top:6px;}
+
+  /* admin */
+  .tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .tab-btn{ padding:9px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--muted); font-size:13px;}
+  .tab-btn.active{ background:rgba(255,46,136,0.12); border-color:var(--pink); color:#ff8cba;}
+  table{ width:100%; border-collapse:collapse; font-size:13px;}
+  th,td{ text-align:left; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  th{ color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;}
+  .table-wrap{ max-height:340px; overflow:auto; border-radius:10px; }
+  .small-btn{ padding:6px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--muted); font-size:12px;}
+  .small-btn:hover{ border-color:var(--pink); color:#ff8cba;}
+  .code-badge{ font-family:'Chakra Petch',monospace; font-weight:700; letter-spacing:1px; color:var(--cyan);}
+  .admin-wide{ max-width:640px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="marquee-wrap">
+  <div class="marquee">OZONE <span>LAND</span></div>
+  <div class="tagline">เกมส์คีบตุ๊กตาออนไลน์ — ลุ้นรางวัลฟรี ทุกการคีบ</div>
+</div>
+
+<div class="layout">
+  <!-- CABINET / GAME PANEL -->
+  <div class="panel">
+    <div class="cabinet">
+      <div class="cabinet-top">
+        <div class="player-chip" id="playerChip">ยังไม่ได้เข้าเล่น</div>
+        <div class="credit-readout mono" id="creditReadout">เครดิต: 0</div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="rail"></div>
+        <div class="claw-arm" id="clawArm" style="left:20%;">
+          <div class="claw-head">
+            <div class="prong left"></div>
+            <div class="prong right"></div>
+          </div>
+        </div>
+        <div class="pit" id="pit"></div>
+        <div class="chute">
+          <div class="chute-label">ช่องรับ<br>ของรางวัล</div>
+          <div class="chute-mouth"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="leftBtn" title="เลื่อนซ้าย">◀</button>
+        <button class="ctrl-btn" id="rightBtn" title="เลื่อนขวา">▶</button>
+        <button class="drop-btn" id="dropBtn">🕹 หย่อนขาคีบ</button>
+      </div>
+      <div class="status-line" id="statusLine">เลื่อนขาคีบไปยังตำแหน่งที่ต้องการ แล้วกด "หย่อนขาคีบ"</div>
+      <a href="#" class="new-entry-link" id="newEntryLink">↻ เริ่มเล่นใหม่ / เปลี่ยนผู้เล่น</a>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel">
+    <h3 class="hist-title"><span class="dot"></span> ผู้โชคดีล่าสุด</h3>
+    <ul class="hist-list" id="histList">
+      <li class="hist-empty">กำลังโหลด...</li>
+    </ul>
+  </div>
+</div>
+
+<button class="admin-gear" id="adminGearBtn" title="ระบบหลังบ้าน">⚙</button>
+
+<!-- ===== ENTRY GATE OVERLAY ===== -->
+<div class="overlay" id="gateOverlay">
+  <div class="modal">
+    <h2>เข้าเล่นเกม</h2>
+    <div class="sub">กรอกข้อมูลก่อนเริ่มคีบตุ๊กตา</div>
+
+    <div class="toggle-row">
+      <button class="toggle-btn active" id="modeNormalBtn">ผู้เล่นทั่วไป</button>
+      <button class="toggle-btn" id="modeSpecialBtn">มีรหัสพิเศษ</button>
+    </div>
+
+    <div class="field">
+      <label for="nicknameInput">ชื่อเล่น</label>
+      <input id="nicknameInput" type="text" maxlength="24" placeholder="เช่น น้องแป้ง">
+    </div>
+    <div class="field">
+      <label for="phoneInput">เบอร์โทรศัพท์สมาชิก</label>
+      <input id="phoneInput" type="tel" maxlength="10" placeholder="เช่น 0891234567">
+    </div>
+    <div class="field hidden" id="specialCodeField">
+      <label for="specialCodeInput">รหัสพิเศษ (6 หลัก)</label>
+      <input id="specialCodeInput" type="text" maxlength="6" placeholder="เช่น A1B2C3" style="text-transform:uppercase; letter-spacing:2px;">
+    </div>
+
+    <div class="err-text" id="gateErr"></div>
+    <button class="primary-btn" id="gateSubmitBtn">เริ่มเล่น</button>
+  </div>
+</div>
+
+<!-- ===== RESULT MODAL ===== -->
+<div class="overlay hidden" id="resultOverlay">
+  <div class="modal">
+    <h2>ยินดีด้วย! 🎉</h2>
+    <div class="sub">คุณได้รับของรางวัล</div>
+    <div class="result-prize">
+      <div class="icon" id="resultIcon">🎁</div>
+      <div class="name" id="resultName">-</div>
+    </div>
+    <div class="sub" id="resultCreditNote" style="text-align:center;"></div>
+    <button class="primary-btn" id="resultContinueBtn">เล่นต่อ</button>
+  </div>
+</div>
+
+<!-- ===== ADMIN LOGIN MODAL ===== -->
+<div class="overlay hidden" id="adminLoginOverlay">
+  <div class="modal">
+    <button class="close-x" id="adminLoginCloseBtn">✕</button>
+    <h2>Super Admin</h2>
+    <div class="sub">เข้าสู่ระบบหลังบ้าน</div>
+    <div class="field">
+      <label for="adminUserInput">Username</label>
+      <input id="adminUserInput" type="text" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="adminPassInput">Password</label>
+      <input id="adminPassInput" type="password" autocomplete="off">
+    </div>
+    <div class="err-text" id="adminLoginErr"></div>
+    <button class="primary-btn" id="adminLoginBtn">เข้าสู่ระบบ</button>
+  </div>
+</div>
+
+<!-- ===== ADMIN PANEL MODAL ===== -->
+<div class="overlay hidden" id="adminPanelOverlay">
+  <div class="modal admin-wide">
+    <button class="close-x" id="adminPanelCloseBtn">✕</button>
+    <h2>ระบบหลังบ้าน</h2>
+    <div class="sub">OZONE LAND — Super Admin</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tabCustomersBtn">ข้อมูลลูกค้า</button>
+      <button class="tab-btn" id="tabSpecialBtn">สร้างบัญชีพิเศษ</button>
+    </div>
+
+    <div id="tabCustomers">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="sub" style="margin:0;">ชื่อเล่น / เบอร์โทรศัพท์ / รางวัลที่ได้รับ</span>
+        <button class="small-btn" id="refreshCustomersBtn">↻ รีเฟรช</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ชื่อเล่น</th><th>เบอร์โทร</th><th>รางวัล</th><th>เวลา</th></tr></thead>
+          <tbody id="customersTbody"><tr><td colspan="4">กำลังโหลด...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tabSpecial" class="hidden">
+      <div class="field">
+        <label for="newCodeInput">รหัสพิเศษ (ตัวอักษร+ตัวเลข 6 หลัก)</label>
+        <input id="newCodeInput" type="text" maxlength="6" placeholder="เช่น A1B2C3" style="text-transform:uppercase; letter-spacing:2px;">
+      </div>
+      <div class="field">
+        <label for="newCreditsInput">จำนวนเครดิตการเล่น</label>
+        <input id="newCreditsInput" type="number" min="1" step="1" placeholder="เช่น 5">
+      </div>
+      <div class="err-text" id="specialFormErr"></div>
+      <button class="primary-btn" id="saveSpecialBtn">💾 บันทึกค่า</button>
+
+      <div style="margin-top:18px; display:flex; justify-content:space-between; align-items:center;">
+        <span class="sub" style="margin:0;">บัญชีพิเศษทั้งหมด (โบนัส: OZONE 01-05 เพิ่มโอกาสเป็น 1%)</span>
+        <button class="small-btn" id="refreshSpecialBtn">↻ รีเฟรช</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>รหัส</th><th>เครดิตคงเหลือ</th><th>สร้างเมื่อ</th><th></th></tr></thead>
+          <tbody id="specialTbody"><tr><td colspan="4">กำลังโหลด...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============== CONFIG ============== */
+  var ADMIN_USER = "OZONELAND";
+  var ADMIN_PASS = "1212312121";
+  var HISTORY_KEY = "ozone-history";
+  var SPECIAL_KEY = "ozone-special-accounts";
+  var MAX_HISTORY = 300;
+
+  var BALL_COLORS = ["#ff2e88","#00e5ff","#ffd400","#7cff6b","#c86bff","#ff8a3d","#ff5b8f","#4dd0ff"];
+
+  var BASE_PRIZES = [
+    {id:1,  label:"คีบฟรี 1 ครั้ง",  w:6.80,  free:1},
+    {id:2,  label:"คีบฟรี 2 ครั้ง",  w:27.21, free:2},
+    {id:3,  label:"คีบฟรี 3 ครั้ง",  w:6.80,  free:3},
+    {id:4,  label:"คีบฟรี 4 ครั้ง",  w:3.40,  free:4},
+    {id:5,  label:"คีบฟรี 5 ครั้ง",  w:1.70,  free:5},
+    {id:6,  label:"คีบฟรี 10 ครั้ง", w:0.17,  free:10},
+    {id:7,  label:"ไอติม 1 ถ้วย (300 Point)", w:6.80},
+    {id:8,  label:"รับฟรี 50 แต้ม",  w:23.81},
+    {id:9,  label:"รับฟรี 100 แต้ม", w:10.20},
+    {id:10, label:"รับฟรี 150 แต้ม", w:6.80},
+    {id:11, label:"รับฟรี 200 แต้ม", w:3.40},
+    {id:12, label:"รับฟรี 300 แต้ม", w:1.70},
+    {id:13, label:"รับฟรี 500 แต้ม", w:0.34},
+    {id:14, label:"OZONE รางวัลพิเศษ OZONE 01", w:0.17, special:true},
+    {id:15, label:"OZONE รางวัลพิเศษ OZONE 02", w:0.17, special:true},
+    {id:16, label:"OZONE รางวัลพิเศษ OZONE 03", w:0.17, special:true},
+    {id:17, label:"OZONE รางวัลพิเศษ OZONE 04", w:0.17, special:true},
+    {id:18, label:"OZONE รางวัลพิเศษ OZONE 05", w:0.17, special:true}
+  ];
+
+  function getPrizePool(boosted){
+    if(!boosted) return BASE_PRIZES;
+    var specialW = 1.0;
+    var specials = BASE_PRIZES.filter(function(p){return p.special;});
+    var others = BASE_PRIZES.filter(function(p){return !p.special;});
+    var othersSum = others.reduce(function(s,p){return s+p.w;},0);
+    var targetOthers = 100 - specials.length*specialW;
+    var scale = targetOthers/othersSum;
+    return others.map(function(p){ return Object.assign({},p,{w:p.w*scale}); })
+      .concat(specials.map(function(p){ return Object.assign({},p,{w:specialW}); }));
+  }
+
+  function weightedPick(prizes){
+    var total = prizes.reduce(function(s,p){return s+p.w;},0);
+    var r = Math.random()*total;
+    for(var i=0;i<prizes.length;i++){
+      if(r < prizes[i].w) return prizes[i];
+      r -= prizes[i].w;
+    }
+    return prizes[prizes.length-1];
+  }
+
+  function prizeIcon(p){
+    if(p.special) return "🏆";
+    if(p.free) return "🎯";
+    if(p.label.indexOf("ไอติม") === 0) return "🍦";
+    return "⭐";
+  }
+
+  function sleep(ms){ return new Promise(function(res){ setTimeout(res, ms); }); }
+
+  /* ============== STORAGE HELPERS ============== */
+  async function loadHistory(){
+    try{
+      var r = await window.storage.get(HISTORY_KEY, true);
+      return r && r.value ? JSON.parse(r.value) : [];
+    }catch(e){ return []; }
+  }
+  async function saveHistoryEntry(entry){
+    try{
+      var list = await loadHistory();
+      list.unshift(entry);
+      if(list.length > MAX_HISTORY) list = list.slice(0, MAX_HISTORY);
+      await window.storage.set(HISTORY_KEY, JSON.stringify(list), true);
+      return list;
+    }catch(e){ console.error("save history failed", e); return null; }
+  }
+  async function loadSpecialAccounts(){
+    try{
+      var r = await window.storage.get(SPECIAL_KEY, true);
+      return r && r.value ? JSON.parse(r.value) : {};
+    }catch(e){ return {}; }
+  }
+  async function saveSpecialAccounts(obj){
+    try{
+      await window.storage.set(SPECIAL_KEY, JSON.stringify(obj), true);
+      return true;
+    }catch(e){ console.error("save special failed", e); return false; }
+  }
+
+  /* ============== STATE ============== */
+  var session = { nickname:"", phone:"", credits:0, boosted:false, specialCode:null };
+  var isAnimating = false;
+  var clawPos = 20; // percent, 8..78
+  var pitEl = document.getElementById("pit");
+  var stageEl = document.getElementById("stage");
+  var clawArm = document.getElementById("clawArm");
+
+  /* ============== BALL PIT ============== */
+  function makeBall(){
+    var b = document.createElement("div");
+    b.className = "ball";
+    var color = BALL_COLORS[Math.floor(Math.random()*BALL_COLORS.length)];
+    b.style.background = "radial-gradient(circle at 30% 30%, #fff, " + color + " 60%)";
+    b.dataset.color = color;
+    return b;
+  }
+  function fillPit(n){
+    pitEl.innerHTML = "";
+    for(var i=0;i<n;i++){ pitEl.appendChild(makeBall()); }
+  }
+  fillPit(26);
+
+  /* ============== CLAW MOVEMENT ============== */
+  function setClawPos(p){
+    clawPos = Math.max(8, Math.min(78, p));
+    clawArm.style.left = clawPos + "%";
+  }
+  document.getElementById("leftBtn").addEventListener("click", function(){
+    if(isAnimating) return;
+    setClawPos(clawPos - 10);
+  });
+  document.getElementById("rightBtn").addEventListener("click", function(){
+    if(isAnimating) return;
+    setClawPos(clawPos + 10);
+  });
+
+  /* ============== UI HELPERS ============== */
+  function updateHUD(){
+    document.getElementById("creditReadout").textContent = "เครดิต: " + session.credits;
+    document.getElementById("playerChip").innerHTML = session.nickname
+      ? "ผู้เล่น: <b>" + escapeHtml(session.nickname) + "</b>" + (session.boosted ? " ✨" : "")
+      : "ยังไม่ได้เข้าเล่น";
+    var dropBtn = document.getElementById("dropBtn");
+    dropBtn.disabled = session.credits <= 0 || isAnimating;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function setStatus(msg){ document.getElementById("statusLine").textContent = msg; }
+
+  async function renderHistory(){
+    var list = await loadHistory();
+    var ul = document.getElementById("histList");
+    if(!list.length){ ul.innerHTML = '<li class="hist-empty">ยังไม่มีผู้โชคดี — เป็นคนแรกเลย!</li>'; return; }
+    ul.innerHTML = list.slice(0,60).map(function(h){
+      return '<li><span class="nm">'+escapeHtml(h.nickname)+'</span><span class="pz">'+escapeHtml(h.prize)+'</span></li>';
+    }).join("");
+  }
+
+  /* ============== ENTRY GATE ============== */
+  var gateOverlay = document.getElementById("gateOverlay");
+  var specialCodeField = document.getElementById("specialCodeField");
+  var isSpecialMode = false;
+
+  document.getElementById("modeNormalBtn").addEventListener("click", function(){
+    isSpecialMode = false;
+    this.classList.add("active");
+    document.getElementById("modeSpecialBtn").classList.remove("active");
+    specialCodeField.classList.add("hidden");
+  });
+  document.getElementById("modeSpecialBtn").addEventListener("click", function(){
+    isSpecialMode = true;
+    this.classList.add("active");
+    document.getElementById("modeNormalBtn").classList.remove("active");
+    specialCodeField.classList.remove("hidden");
+  });
+
+  document.getElementById("gateSubmitBtn").addEventListener("click", async function(){
+    var errEl = document.getElementById("gateErr");
+    errEl.textContent = "";
+    var nickname = document.getElementById("nicknameInput").value.trim();
+    var phone = document.getElementById("phoneInput").value.trim();
+
+    if(!nickname){ errEl.textContent = "กรุณากรอกชื่อเล่น"; return; }
+    if(!/^[0-9]{9,10}$/.test(phone)){ errEl.textContent = "กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (9-10 หลัก)"; return; }
+
+    var btn = this;
+    btn.disabled = true;
+
+    if(isSpecialMode){
+      var code = document.getElementById("specialCodeInput").value.trim().toUpperCase();
+      if(!/^[A-Z0-9]{6}$/.test(code)){ errEl.textContent = "รหัสพิเศษต้องเป็นตัวอักษร/ตัวเลข 6 หลัก"; btn.disabled=false; return; }
+      var accounts = await loadSpecialAccounts();
+      var acc = accounts[code];
+      if(!acc || acc.credits <= 0){ errEl.textContent = "รหัสไม่ถูกต้อง หรือเครดิตหมดแล้ว"; btn.disabled=false; return; }
+      session.nickname = nickname;
+      session.phone = phone;
+      session.credits = acc.credits;
+      session.boosted = true;
+      session.specialCode = code;
+    } else {
+      session.nickname = nickname;
+      session.phone = phone;
+      session.credits = 1;
+      session.boosted = false;
+      session.specialCode = null;
+    }
+
+    btn.disabled = false;
+    gateOverlay.classList.add("hidden");
+    updateHUD();
+    setStatus('เลื่อนขาคีบไปยังตำแหน่งที่ต้องการ แล้วกด "หย่อนขาคีบ"');
+  });
+
+  document.getElementById("newEntryLink").addEventListener("click", function(e){
+    e.preventDefault();
+    if(isAnimating) return;
+    session = { nickname:"", phone:"", credits:0, boosted:false, specialCode:null };
+    document.getElementById("nicknameInput").value = "";
+    document.getElementById("phoneInput").value = "";
+    document.getElementById("specialCodeInput").value = "";
+    document.getElementById("gateErr").textContent = "";
+    updateHUD();
+    gateOverlay.classList.remove("hidden");
+  });
+
+  /* ============== GAME PLAY ============== */
+  var resultOverlay = document.getElementById("resultOverlay");
+
+  document.getElementById("dropBtn").addEventListener("click", playRound);
+
+  async function playRound(){
+    if(isAnimating || session.credits <= 0) return;
+    isAnimating = true;
+    updateHUD();
+    setStatus("กำลังหย่อนขาคีบ...");
+
+    // pick a ball from the pit to "grab" visually
+    var balls = pitEl.querySelectorAll(".ball");
+    var chosenBall = balls.length ? balls[Math.floor(Math.random()*balls.length)] : null;
+    var color = chosenBall ? chosenBall.dataset.color : BALL_COLORS[0];
+    if(chosenBall){ chosenBall.style.opacity = "0.15"; chosenBall.style.transform = "scale(0.7)"; }
+
+    var stageRect = stageEl.getBoundingClientRect();
+
+    // descend
+    clawArm.classList.add("descending");
+    await sleep(550);
+
+    // close / grab
+    clawArm.classList.add("closed");
+    setStatus("คีบของรางวัลไว้แล้ว!");
+    await sleep(280);
+
+    // create travel ball at claw tip
+    var travelBall = document.createElement("div");
+    travelBall.className = "travel-ball";
+    travelBall.style.background = "radial-gradient(circle at 30% 30%, #fff, " + color + " 60%)";
+    travelBall.style.left = clawPos + "%";
+    travelBall.style.top = "72%";
+    stageEl.appendChild(travelBall);
+    if(chosenBall && chosenBall.parentNode){ chosenBall.parentNode.removeChild(chosenBall); }
+
+    // ascend
+    clawArm.classList.remove("descending");
+    travelBall.style.top = "14%";
+    await sleep(550);
+
+    // move to chute
+    setStatus("กำลังนำของรางวัลไปส่งที่ช่องรับรางวัล...");
+    setClawPos(84);
+    travelBall.style.left = "84%";
+    await sleep(500);
+
+    // open & drop
+    clawArm.classList.remove("closed");
+    travelBall.style.top = "88%";
+    travelBall.style.opacity = "0";
+    await sleep(420);
+    if(travelBall.parentNode){ travelBall.parentNode.removeChild(travelBall); }
+
+    // return claw home
+    setClawPos(20);
+
+    // respawn a ball in the pit
+    pitEl.appendChild(makeBall());
+
+    // ===== determine prize =====
+    var pool = getPrizePool(session.boosted);
+    var prize = weightedPick(pool);
+
+    session.credits -= 1;
+    var bonusNote = "";
+    if(prize.free){
+      session.credits += prize.free;
+      bonusNote = "🎁 ได้รับสิทธิ์คีบฟรีเพิ่ม " + prize.free + " ครั้ง!";
+    }
+
+    // deduct special account credits in storage
+    if(session.boosted && session.specialCode){
+      try{
+        var accounts = await loadSpecialAccounts();
+        if(accounts[session.specialCode]){
+          accounts[session.specialCode].credits = Math.max(0, session.credits);
+          await saveSpecialAccounts(accounts);
+        }
+      }catch(e){ console.error(e); }
+    }
+
+    var entry = {
+      nickname: session.nickname,
+      phone: session.phone,
+      prize: prize.label,
+      special: !!session.boosted,
+      timestamp: new Date().toISOString()
+    };
+    await saveHistoryEntry(entry);
+    await renderHistory();
+
+    // show result
+    document.getElementById("resultIcon").textContent = prizeIcon(prize);
+    document.getElementById("resultName").textContent = prize.label;
+    document.getElementById("resultCreditNote").textContent = bonusNote || ("เครดิตคงเหลือ: " + session.credits);
+    document.getElementById("resultContinueBtn").textContent = session.credits > 0 ? "เล่นต่อ" : "ปิด";
+    resultOverlay.classList.remove("hidden");
+
+    isAnimating = false;
+    updateHUD();
+    setStatus(session.credits > 0 ? 'เลื่อนขาคีบไปยังตำแหน่งที่ต้องการ แล้วกด "หย่อนขาคีบ"' : "เครดิตหมดแล้ว — กด \"เริ่มเล่นใหม่\" เพื่อเล่นอีกครั้ง");
+  }
+
+  document.getElementById("resultContinueBtn").addEventListener("click", function(){
+    resultOverlay.classList.add("hidden");
+    if(session.credits <= 0){
+      document.getElementById("newEntryLink").click();
+    }
+  });
+
+  /* ============== ADMIN ============== */
+  var adminLoggedIn = false;
+  var adminLoginOverlay = document.getElementById("adminLoginOverlay");
+  var adminPanelOverlay = document.getElementById("adminPanelOverlay");
+
+  document.getElementById("adminGearBtn").addEventListener("click", function(){
+    if(adminLoggedIn){ openAdminPanel(); }
+    else { adminLoginOverlay.classList.remove("hidden"); }
+  });
+  document.getElementById("adminLoginCloseBtn").addEventListener("click", function(){
+    adminLoginOverlay.classList.add("hidden");
+  });
+  document.getElementById("adminPanelCloseBtn").addEventListener("click", function(){
+    adminPanelOverlay.classList.add("hidden");
+  });
+
+  document.getElementById("adminLoginBtn").addEventListener("click", function(){
+    var u = document.getElementById("adminUserInput").value.trim();
+    var p = document.getElementById("adminPassInput").value;
+    var errEl = document.getElementById("adminLoginErr");
+    if(u === ADMIN_USER && p === ADMIN_PASS){
+      adminLoggedIn = true;
+      errEl.textContent = "";
+      document.getElementById("adminUserInput").value = "";
+      document.getElementById("adminPassInput").value = "";
+      adminLoginOverlay.classList.add("hidden");
+      openAdminPanel();
+    } else {
+      errEl.textContent = "Username หรือ Password ไม่ถูกต้อง";
+    }
+  });
+
+  function openAdminPanel(){
+    adminPanelOverlay.classList.remove("hidden");
+    refreshCustomers();
+    refreshSpecialAccounts();
+  }
+
+  // tabs
+  document.getElementById("tabCustomersBtn").addEventListener("click", function(){
+    this.classList.add("active");
+    document.getElementById("tabSpecialBtn").classList.remove("active");
+    document.getElementById("tabCustomers").classList.remove("hidden");
+    document.getElementById("tabSpecial").classList.add("hidden");
+  });
+  document.getElementById("tabSpecialBtn").addEventListener("click", function(){
+    this.classList.add("active");
+    document.getElementById("tabCustomersBtn").classList.remove("active");
+    document.getElementById("tabSpecial").classList.remove("hidden");
+    document.getElementById("tabCustomers").classList.add("hidden");
+  });
+
+  async function refreshCustomers(){
+    var tbody = document.getElementById("customersTbody");
+    tbody.innerHTML = '<tr><td colspan="4">กำลังโหลด...</td></tr>';
+    var list = await loadHistory();
+    if(!list.length){ tbody.innerHTML = '<tr><td colspan="4">ยังไม่มีข้อมูล</td></tr>'; return; }
+    tbody.innerHTML = list.map(function(h){
+      var t = new Date(h.timestamp);
+      var tStr = isNaN(t.getTime()) ? "-" : t.toLocaleString("th-TH");
+      return "<tr><td>"+escapeHtml(h.nickname)+"</td><td>"+escapeHtml(h.phone||"-")+"</td><td>"+escapeHtml(h.prize)+(h.special?' ✨':'')+"</td><td>"+tStr+"</td></tr>";
+    }).join("");
+  }
+  document.getElementById("refreshCustomersBtn").addEventListener("click", refreshCustomers);
+
+  async function refreshSpecialAccounts(){
+    var tbody = document.getElementById("specialTbody");
+    tbody.innerHTML = '<tr><td colspan="4">กำลังโหลด...</td></tr>';
+    var accounts = await loadSpecialAccounts();
+    var codes = Object.keys(accounts);
+    if(!codes.length){ tbody.innerHTML = '<tr><td colspan="4">ยังไม่มีบัญชีพิเศษ</td></tr>'; return; }
+    tbody.innerHTML = codes.map(function(code){
+      var acc = accounts[code];
+      var created = acc.createdAt ? new Date(acc.createdAt).toLocaleDateString("th-TH") : "-";
+      return "<tr><td class='code-badge'>"+escapeHtml(code)+"</td><td>"+acc.credits+"</td><td>"+created+"</td>"+
+        "<td><button class='small-btn' data-code='"+escapeHtml(code)+"'>ลบ</button></td></tr>";
+    }).join("");
+    tbody.querySelectorAll("button[data-code]").forEach(function(btn){
+      btn.addEventListener("click", async function(){
+        var accs = await loadSpecialAccounts();
+        delete accs[this.dataset.code];
+        await saveSpecialAccounts(accs);
+        refreshSpecialAccounts();
+      });
+    });
+  }
+  document.getElementById("refreshSpecialBtn").addEventListener("click", refreshSpecialAccounts);
+
+  document.getElementById("saveSpecialBtn").addEventListener("click", async function(){
+    var errEl = document.getElementById("specialFormErr");
+    errEl.textContent = "";
+    var code = document.getElementById("newCodeInput").value.trim().toUpperCase();
+    var credits = parseInt(document.getElementById("newCreditsInput").value, 10);
+
+    if(!/^[A-Z0-9]{6}$/.test(code)){ errEl.textContent = "รหัสต้องเป็นตัวอักษร/ตัวเลขผสมกัน 6 หลัก"; return; }
+    if(!credits || credits < 1){ errEl.textContent = "กรุณากรอกจำนวนเครดิตให้ถูกต้อง"; return; }
+
+    var btn = this;
+    btn.disabled = true;
+    var accounts = await loadSpecialAccounts();
+    accounts[code] = { credits: credits, createdAt: new Date().toISOString() };
+    var ok = await saveSpecialAccounts(accounts);
+    btn.disabled = false;
+    if(!ok){ errEl.textContent = "บันทึกไม่สำเร็จ กรุณาลองใหม่"; return; }
+
+    document.getElementById("newCodeInput").value = "";
+    document.getElementById("newCreditsInput").value = "";
+    refreshSpecialAccounts();
+  });
+
+  /* ============== INIT ============== */
+  updateHUD();
+  renderHistory();
+})();
+</script>
+</body>
+</html>
