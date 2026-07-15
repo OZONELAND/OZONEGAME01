@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โอโซนแลนด์ | เกมส์เปิดการ์ด ลุ้นแต้ม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;700;800&family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-1:#0E0C33;
+    --navy-2:#1B1856;
+    --violet:#7C5CFF;
+    --violet-dim:#4B3AA8;
+    --cyan:#2FE6C6;
+    --pink:#FF5DA2;
+    --gold:#FFC93C;
+    --cloud:#F5F3FF;
+    --cloud-dim:#B9B4E0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Prompt',sans-serif;
+    background:
+      radial-gradient(circle at 15% 8%, rgba(124,92,255,0.35), transparent 45%),
+      radial-gradient(circle at 85% 12%, rgba(47,230,198,0.25), transparent 40%),
+      linear-gradient(180deg, var(--navy-1), var(--navy-2) 60%, #100D3D 100%);
+    color:var(--cloud);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 14px;
+  }
+  .stage{
+    width:100%;
+    max-width:460px;
+  }
+  .brand{
+    text-align:center;
+    margin-bottom:6px;
+  }
+  .brand .logo{
+    font-family:'Kanit',sans-serif;
+    font-weight:800;
+    font-size:26px;
+    letter-spacing:0.5px;
+    background:linear-gradient(90deg, var(--cyan), var(--violet) 55%, var(--pink));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .brand .tag{
+    font-size:13px;
+    color:var(--cloud-dim);
+    margin-top:2px;
+  }
+  h1{
+    font-family:'Kanit',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    text-align:center;
+    margin:14px 0 4px;
+    color:var(--cloud);
+  }
+  .sub{
+    text-align:center;
+    font-size:13.5px;
+    color:var(--cloud-dim);
+    margin:0 0 18px;
+    line-height:1.6;
+  }
+  .sub b{color:var(--gold); font-weight:500;}
+
+  .arena{
+    position:relative;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.09);
+    border-radius:22px;
+    padding:18px 16px 20px;
+    overflow:hidden;
+  }
+  .arena::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(2px 2px at 20% 20%, rgba(255,255,255,0.5) 0, transparent 60%),
+      radial-gradient(2px 2px at 70% 60%, rgba(255,255,255,0.35) 0, transparent 60%),
+      radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,0.4) 0, transparent 60%),
+      radial-gradient(1.5px 1.5px at 85% 30%, rgba(255,255,255,0.3) 0, transparent 60%);
+    pointer-events:none;
+  }
+
+  .rail{
+    position:relative;
+    height:14px;
+    background:linear-gradient(90deg, var(--violet-dim), var(--violet), var(--violet-dim));
+    border-radius:8px;
+    margin-bottom:0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+  }
+  .rail::before,.rail::after{
+    content:"";
+    position:absolute; top:50%; width:9px; height:9px; border-radius:50%;
+    background:var(--gold); transform:translateY(-50%);
+    box-shadow:0 0 6px var(--gold);
+  }
+  .rail::before{left:6px;}
+  .rail::after{right:6px;}
+
+  .claw-zone{
+    position:relative;
+    height:56px;
+  }
+  .claw{
+    position:absolute;
+    top:0; left:0;
+    width:46px; height:56px;
+    transform-origin:top center;
+    transition:transform 650ms cubic-bezier(.55,.05,.2,1);
+    will-change:transform;
+  }
+  .claw .cable{
+    position:absolute; left:50%; top:0; width:3px; height:16px;
+    background:var(--cloud-dim); transform:translateX(-50%);
+  }
+  .claw .head{
+    position:absolute; left:50%; top:14px; width:22px; height:14px;
+    background:linear-gradient(180deg,#DADAF0,#9E9AC9);
+    border-radius:5px; transform:translateX(-50%);
+    box-shadow:0 0 8px rgba(0,0,0,0.3);
+  }
+  .claw .pincer{
+    position:absolute; top:26px; width:5px; height:24px;
+    background:var(--gold);
+    border-radius:3px;
+    transform-origin:top center;
+    transition:transform 320ms ease;
+    box-shadow:0 0 5px rgba(255,201,60,0.6);
+  }
+  .claw .pincer.left{left:12px; transform:rotate(-18deg);}
+  .claw .pincer.right{left:29px; transform:rotate(18deg);}
+  .claw.grabbing .pincer.left{transform:rotate(6deg);}
+  .claw.grabbing .pincer.right{transform:rotate(-6deg);}
+
+  .grid{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:9px;
+    margin-top:8px;
+    z-index:1;
+  }
+  .card{
+    aspect-ratio:3/4;
+    perspective:600px;
+    cursor:pointer;
+  }
+  .card.locked{cursor:default;}
+  .card-inner{
+    position:relative;
+    width:100%; height:100%;
+    transform-style:preserve-3d;
+    transition:transform 520ms cubic-bezier(.4,.1,.2,1);
+  }
+  .card.flipped .card-inner{transform:rotateY(180deg);}
+  .card-face{
+    position:absolute; inset:0;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden;
+    flex-direction:column;
+  }
+  .card-back{
+    background:linear-gradient(155deg, var(--violet-dim), #2A2470);
+    border:1px solid rgba(255,255,255,0.15);
+  }
+  .card-back .mark{
+    font-family:'Kanit',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--cyan);
+    opacity:0.9;
+  }
+  .card-back .num{
+    font-size:10px;
+    color:var(--cloud-dim);
+    margin-top:2px;
+  }
+  .card:not(.locked):hover .card-back{
+    border-color:var(--cyan);
+    box-shadow:0 0 10px rgba(47,230,198,0.35);
+  }
+  .card-front{
+    transform:rotateY(180deg);
+    border:1px solid rgba(255,255,255,0.2);
+  }
+  .card-front .pts{
+    font-family:'Kanit',sans-serif;
+    font-weight:800;
+    font-size:20px;
+    line-height:1;
+  }
+  .card-front .lbl{
+    font-size:9.5px;
+    color:var(--cloud-dim);
+    margin-top:3px;
+  }
+  .tier-zero .card-front{background:linear-gradient(155deg,#3A3766,#2A2750);}
+  .tier-zero .pts{color:var(--cloud-dim);}
+  .tier-low .card-front{background:linear-gradient(155deg,#1C4A63,#123146); }
+  .tier-low .pts{color:var(--cyan);}
+  .tier-mid .card-front{background:linear-gradient(155deg,#3B2E7A,#291F58);}
+  .tier-mid .pts{color:#C9BBFF;}
+  .tier-high .card-front{background:linear-gradient(155deg,#6E2450,#4A1638);}
+  .tier-high .pts{color:var(--gold);}
+
+  .picked-glow{
+    box-shadow:0 0 0 2px var(--gold), 0 0 16px rgba(255,201,60,0.6);
+  }
+
+  .footer-note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--cloud-dim);
+    margin-top:14px;
+    line-height:1.6;
+  }
+
+  .actions{
+    display:flex;
+    justify-content:center;
+    margin-top:16px;
+  }
+  .btn{
+    font-family:'Prompt',sans-serif;
+    font-weight:500;
+    font-size:14.5px;
+    color:var(--navy-1);
+    background:linear-gradient(90deg, var(--gold), #FFD98A);
+    border:none;
+    padding:11px 26px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(255,201,60,0.35);
+    transition:transform 150ms ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn.ghost{
+    background:transparent;
+    color:var(--cloud);
+    border:1px solid rgba(255,255,255,0.35);
+    box-shadow:none;
+  }
+
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(8,6,30,0.72);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    z-index:10;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 300ms ease;
+  }
+  .overlay.show{opacity:1; pointer-events:auto;}
+  .modal{
+    background:linear-gradient(165deg, #211D5E, #150F3F);
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:20px;
+    padding:28px 24px 22px;
+    max-width:340px;
+    width:100%;
+    text-align:center;
+    transform:translateY(10px) scale(0.96);
+    transition:transform 300ms ease;
+  }
+  .overlay.show .modal{transform:translateY(0) scale(1);}
+  .modal .headline{
+    font-family:'Kanit',sans-serif;
+    font-weight:700;
+    font-size:19px;
+    margin:0 0 4px;
+  }
+  .modal .big{
+    font-family:'Kanit',sans-serif;
+    font-weight:800;
+    font-size:46px;
+    margin:10px 0 2px;
+    color:var(--gold);
+  }
+  .modal .desc{
+    font-size:13.5px;
+    color:var(--cloud-dim);
+    margin:0 0 18px;
+    line-height:1.6;
+  }
+
+  .confetti{
+    position:fixed;
+    top:-10px;
+    width:8px; height:8px;
+    border-radius:2px;
+    z-index:20;
+    pointer-events:none;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(540deg); opacity:0; }
+  }
+
+  @media (max-width:360px){
+    .card-front .pts{font-size:17px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="brand">
+    <div class="logo">โอโซนแลนด์</div>
+    <div class="tag">OZONE LAND · ตู้คีบตุ๊กตา &amp; สะสมแสตมป์</div>
+  </div>
+
+  <h1>เปิดการ์ด ลุ้นแต้มสะสม</h1>
+  <p class="sub">คีบการ์ดมา 1 ใบ ลุ้นแต้มสะสมสูงสุด <b>900 แต้ม</b> ใช้แลกของรางวัลได้ที่ร้าน</p>
+
+  <div class="arena">
+    <div class="rail"></div>
+    <div class="claw-zone" id="clawZone">
+      <div class="claw" id="claw">
+        <div class="cable"></div>
+        <div class="pincer left"></div>
+        <div class="pincer right"></div>
+        <div class="head"></div>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <p class="footer-note">เล่นได้ 1 ครั้งต่อรอบ · แต้มที่ได้รับสามารถแลกของรางวัลได้ที่ร้านโอโซนแลนด์ทุกสาขา<br>The Hub รังสิต · ฟิวเจอร์พาร์ค รังสิต · Centerpoint Siam Square</p>
+
+  <div class="actions">
+    <button class="btn ghost" id="resetBtn">เริ่มรอบใหม่</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <p class="headline" id="modalHeadline">ยินดีด้วย!</p>
+    <p class="big" id="modalPoints">0</p>
+    <p class="desc" id="modalDesc">แต้ม สะสมไว้แลกของรางวัลที่ร้านได้เลย</p>
+    <button class="btn" id="playAgainBtn">เล่นอีกครั้ง</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var PRIZES = [0,100,200,300,400,500,600,700,800,900];
+  var grid = document.getElementById('grid');
+  var claw = document.getElementById('claw');
+  var overlay = document.getElementById('overlay');
+  var modalHeadline = document.getElementById('modalHeadline');
+  var modalPoints = document.getElementById('modalPoints');
+  var modalDesc = document.getElementById('modalDesc');
+  var resetBtn = document.getElementById('resetBtn');
+  var playAgainBtn = document.getElementById('playAgainBtn');
+  var arena = document.querySelector('.arena');
+
+  var locked = false;
+  var order = [];
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  function tierClass(points){
+    if(points===0) return 'tier-zero';
+    if(points<=300) return 'tier-low';
+    if(points<=600) return 'tier-mid';
+    return 'tier-high';
+  }
+
+  function buildGrid(){
+    grid.innerHTML = '';
+    order = shuffle(PRIZES);
+    for(var i=0;i<10;i++){
+      var card = document.createElement('div');
+      card.className = 'card ' + tierClass(order[i]);
+      card.dataset.points = order[i];
+
+      var inner = document.createElement('div');
+      inner.className = 'card-inner';
+
+      var back = document.createElement('div');
+      back.className = 'card-face card-back';
+      back.innerHTML = '<div class="mark">OZ</div><div class="num">ใบที่ '+(i+1)+'</div>';
+
+      var front = document.createElement('div');
+      front.className = 'card-face card-front';
+      front.innerHTML = '<div class="pts">'+(order[i]===0 ? 'X' : '+'+order[i])+'</div><div class="lbl">'+(order[i]===0 ? 'ไม่ถูกรางวัล' : 'แต้ม')+'</div>';
+
+      inner.appendChild(back);
+      inner.appendChild(front);
+      card.appendChild(inner);
+      card.addEventListener('click', onPick);
+      grid.appendChild(card);
+    }
+  }
+
+  function resetClaw(){
+    claw.style.transition = 'none';
+    claw.style.transform = 'translate(0px,0px)';
+    claw.classList.remove('grabbing');
+    void claw.offsetWidth;
+    claw.style.transition = '';
+  }
+
+  function lockAll(){
+    var cards = grid.querySelectorAll('.card');
+    cards.forEach(function(c){ c.classList.add('locked'); });
+  }
+
+  function spawnConfetti(count, colors){
+    for(var i=0;i<count;i++){
+      var el = document.createElement('div');
+      el.className = 'confetti';
+      var left = Math.random()*100;
+      el.style.left = left + 'vw';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      var dur = 1800 + Math.random()*1400;
+      el.style.animation = 'fall ' + dur + 'ms ease-in forwards';
+      el.style.animationDelay = (Math.random()*300) + 'ms';
+      document.body.appendChild(el);
+      setTimeout(function(node){ return function(){ node.remove(); }; }(el), dur+400);
+    }
+  }
+
+  function onPick(e){
+    if(locked) return;
+    locked = true;
+    var card = e.currentTarget;
+    lockAll();
+
+    var clawRect = claw.getBoundingClientRect();
+    var cardRect = card.getBoundingClientRect();
+
+    var deltaX = (cardRect.left + cardRect.width/2) - (clawRect.left + clawRect.width/2);
+    var deltaY = (cardRect.top - clawRect.top) - 6;
+
+    claw.style.transform = 'translate(' + deltaX + 'px,' + deltaY + 'px)';
+
+    setTimeout(function(){
+      claw.classList.add('grabbing');
+    }, 650);
+
+    setTimeout(function(){
+      claw.style.transform = 'translate(' + deltaX + 'px,' + (deltaY-14) + 'px)';
+    }, 950);
+
+    setTimeout(function(){
+      card.classList.add('flipped', 'picked-glow');
+      var points = parseInt(card.dataset.points, 10);
+      revealResult(points);
+    }, 1350);
+  }
+
+  function revealResult(points){
+    var colors = ['#FFC93C','#7C5CFF','#2FE6C6','#FF5DA2'];
+    if(points===0){
+      modalHeadline.textContent = 'พลาดไปนิดเดียว!';
+      modalPoints.textContent = '0';
+      modalDesc.textContent = 'รอบนี้ยังไม่ถูกรางวัล ลองใหม่ในรอบถัดไปได้เลยนะ';
+      spawnConfetti(0, colors);
+    } else {
+      modalHeadline.textContent = points>=700 ? 'สุดยอดไปเลย!' : 'ยินดีด้วย!';
+      modalPoints.textContent = '+' + points;
+      modalDesc.textContent = 'แต้มสะสม ใช้แลกของรางวัลได้ที่ร้านโอโซนแลนด์ทุกสาขา';
+      spawnConfetti(points>=700 ? 60 : (points>=400 ? 40 : 24), colors);
+    }
+    setTimeout(function(){
+      overlay.classList.add('show');
+    }, 350);
+  }
+
+  function newRound(){
+    overlay.classList.remove('show');
+    locked = false;
+    resetClaw();
+    buildGrid();
+  }
+
+  resetBtn.addEventListener('click', newRound);
+  playAgainBtn.addEventListener('click', newRound);
+
+  buildGrid();
+})();
+</script>
+
+</body>
+</html>
